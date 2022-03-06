@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/svg">
+        <file>resources/zoom_out.svg</file>
+        <file>resources/zoom_in.svg</file>
+        <file>resources/straw.svg</file>
+        <file>resources/rectangle.svg</file>
+        <file>resources/pen.svg</file>
+        <file>resources/new.svg</file>
+        <file>resources/line.svg</file>
+        <file>resources/flip_vertical.svg</file>
+        <file>resources/flip_horizontal.svg</file>
+        <file>resources/fit_window.svg</file>
+        <file>resources/fill.svg</file>
+        <file>resources/eraser.svg</file>
+        <file>resources/circle.svg</file>
+        <file>resources/brush.svg</file>
+        <file>resources/spray.svg</file>
+        <file>resources/open.svg</file>
+        <file>resources/fit_width.svg</file>
+        <file>resources/Cursor.svg</file>
+        <file>resources/save.svg</file>
+    </qresource>
+    <qresource prefix="/png">
+        <file>resources/border-weight.png</file>
+    </qresource>
+</RCC>

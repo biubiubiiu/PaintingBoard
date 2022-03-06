@@ -1,0 +1,5 @@
+Pillow
+matplotlib
+PyQT5
+opencv-contrib-python-headless
+numpy
