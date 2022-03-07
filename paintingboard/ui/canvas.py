@@ -208,65 +208,59 @@ class Canvas(QWidget):
     # Fill events
 
     def fill_mousePressEvent(self, ev):
+        """
+        Taken from: https://stackoverflow.com/questions/52460040/implementing-flood-fill-in-pyqt5
+        """
 
         # Convert to image for pixel-by-pixel reading.
         image = self.pixmap.toImage()
         w, h = image.width(), image.height()
         s = image.bits().asstring(w * h * 4)
 
+        # Lookup the 3-byte value at our current location.
+        def get_pixel(x, y):
+            i = (x + (y * w)) * 4
+            return s[i:i+3]
+
         pos = self.transformPos(ev.localPos())
         x, y = int(pos.x()), int(pos.y())  # Pixel location in image
-
-        # Lookup the 3-byte value at our current location.
-        i = (x + (y * w)) * 4
-        target_color = s[i:i+3]
-
-        # Convert bytestring to 1byte pp. true/false for matching colour. True values
-        # will be 255, non-matching 0. Simplifies the lookup in get_pixel and
-        # comparison in the main loop giving slight performance increase.
-        s = b''.join(b'\xff' if s[n:n+3] == target_color else b'\x00' for n in range(0, len(s), 4))
-
-        def get_pixel(x, y):
-            i = (x + (y * w))
-            return s[i]
+        target_color = get_pixel(x, y)
 
         visited = set()
-        to_fill = []
         queue = [(x, y)]
 
         def get_cardinal_points(have_seen, center_pos):
             points = []
             cx, cy = center_pos
-            for x, y in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-                xx, yy = cx + x, cy + y
-                if (0 <= xx < w and 0 <= yy < h and (xx, yy) not in have_seen):
-                    points.append((xx, yy))
-                    have_seen.add((xx, yy))
+            for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in have_seen:
+                    points.append((nx, ny))
+                    have_seen.add((nx, ny))
 
             return points
 
+        p = QPainter(self.pixmap)
+        p.setPen(QPen(self.painter_color))
+
         while queue:
-            x, y = queue.pop()
-            if get_pixel(x, y):  # 255 for a match (True) or 0 for a miss (False)
-                to_fill.append((x, y))
+            x, y = queue.pop(0)
+            if get_pixel(x, y) == target_color:
+                p.drawPoint(QPoint(x, y))
                 queue.extend(get_cardinal_points(visited, (x, y)))
 
-        if to_fill:
-            # Now we have the points, perform the fill.
-            p = QPainter(self.pixmap)
-            p.setPen(QPen(self.painter_color))
-            p.drawPoints(*[QPoint(*xy) for xy in to_fill])
-            self.update()
+        self.update()
 
     # Generic shape events: Rectangle, Ellipse, Rounded-rect
 
     def generic_shape_mousePressEvent(self, ev):
         if not self.painting_shape:
             self.prev_pos = self.transformPos(ev.localPos())
+            self.pixmap_preview = self.pixmap.copy()
             self.painting_shape = True
         else:
             self.painting_shape = False
-            self.pixmap = self.pixmap_preview  # finish
+            self.pixmap = self.pixmap_preview.copy()  # finish
             self.update()
 
     # Line events
@@ -274,6 +268,8 @@ class Canvas(QWidget):
         self.generic_shape_mousePressEvent(ev)
 
     def line_mouseMoveEvent(self, ev):
+        if not self.painting_shape:
+            return
         preview = self.pixmap.copy()
         painter = self.build_painter(dst=preview)
         current_pos = self.transformPos(ev.localPos())
@@ -286,6 +282,8 @@ class Canvas(QWidget):
         self.generic_shape_mousePressEvent(ev)
 
     def rect_mouseMoveEvent(self, ev):
+        if not self.painting_shape:
+            return
         preview = self.pixmap.copy()
         painter = self.build_painter(dst=preview)
         current_pos = self.transformPos(ev.localPos())
@@ -299,6 +297,8 @@ class Canvas(QWidget):
         self.generic_shape_mousePressEvent(ev)
 
     def ellipse_mouseMoveEvent(self, ev):
+        if not self.painting_shape:
+            return
         preview = self.pixmap.copy()
         painter = self.build_painter(dst=preview)
         current_pos = self.transformPos(ev.localPos())
