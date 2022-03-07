@@ -207,6 +207,9 @@ class Canvas(QWidget):
 
     # Fill events
 
+    # FIXME: QT main thread will dead when number of points to be
+    # painted reachs certain limit (about 50), still dont know why
+
     def fill_mousePressEvent(self, ev):
         """
         Taken from: https://stackoverflow.com/questions/52460040/implementing-flood-fill-in-pyqt5
