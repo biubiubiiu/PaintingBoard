@@ -82,11 +82,13 @@ class View(object):
 
     def new_painting(self):
         assert self.viewModel is not None
+        self.clear_canvas()
         image = self.viewModel.new_painting()
         self.window.display(image)
 
     def open_file(self, fname):
         assert self.viewModel is not None
+        self.clear_canvas()
         image = self.viewModel.load_file(fname)
         self.window.display(image)
 

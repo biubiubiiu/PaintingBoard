@@ -264,6 +264,7 @@ class Canvas(QWidget):
         else:
             self.painting_shape = False
             self.pixmap = self.pixmap_preview.copy()  # finish
+            self.prev_pos = None
             self.update()
 
     # Line events

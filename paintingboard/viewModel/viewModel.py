@@ -37,6 +37,7 @@ class ViewModel(object):
     def clear_canvas(self):
         self.canvasNotEmpty.on_next(False)
         self.currentFilename.on_next(None)
+        self.switch_mode('default')
 
     def switch_mode(self, action):
         str2Action = {

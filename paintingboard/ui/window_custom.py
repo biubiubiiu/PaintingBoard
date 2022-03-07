@@ -14,7 +14,7 @@ class Ui_MainWindow_Custom(Ui_MainWindow):
         sizeicon.setPixmap(QPixmap(':/png/resources/border-weight.png'))
         self.drawingToolbar.addWidget(sizeicon)
         self.sizeselect = QSlider()
-        self.sizeselect.setRange(1,20)
+        self.sizeselect.setRange(1, 5)
         self.sizeselect.setOrientation(Qt.Horizontal)
         self.drawingToolbar.addWidget(self.sizeselect)
 
