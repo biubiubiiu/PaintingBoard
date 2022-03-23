@@ -256,6 +256,8 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
     def zoom(self, isZoomIn=True):
         self.canvas.scale += 0.1 * (1 if isZoomIn else -1)
         self.zoomMode = Zooming.MANUAL_ZOOM
+        self.canvas.updateGeometry()
+        self.canvas.adjustSize()
         self.canvas.repaint()
 
     def adjustScale(self):
