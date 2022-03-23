@@ -52,6 +52,8 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
 
         self.zoomMode = Zooming.FIT_WINDOW
 
+        self.setAcceptDrops(True)  # TODO: set this property in mainwindow.ui
+
         self.setupUi(self)
         self.initListeners()
         self.establishConnections()
@@ -132,7 +134,10 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
         if filename:
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
-            self.notifyListener(EVENT_LOAD_FILE, fname=filename)
+            self._load_file(filename)
+
+    def _load_file(self, filename):
+        self.notifyListener(EVENT_LOAD_FILE, fname=filename)
 
     def _saveFile(self):
         path = '.'
@@ -236,6 +241,18 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
             else self.scrollArea.horizontalScrollBar()
         scrollBar.setValue(scrollBar.value() + scrollBar.singleStep() * units)
 
+    def handle_drag_drop_event(self, event, type):
+        if not event.mimeData().hasImage:
+            event.ignore()
+            return
+        
+        if type == 'drop':
+            event.setDropAction(Qt.CopyAction)
+            file_path = event.mimeData().urls()[0].toLocalFile()
+            self._load_file(file_path)
+
+        event.accept()
+
     def zoom(self, isZoomIn=True):
         self.canvas.scale += 0.1 * (1 if isZoomIn else -1)
         self.zoomMode = Zooming.MANUAL_ZOOM
@@ -262,3 +279,12 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
         modes = (Zooming.FIT_WIDTH, Zooming.FIT_WINDOW)
         for action, mode in zip(actions, modes):
             action.setChecked(True if mode == self.zoomMode else False)
+
+    def dragEnterEvent(self, event):
+        self.handle_drag_drop_event(event, 'enter')
+
+    def dragMoveEvent(self, event):
+        self.handle_drag_drop_event(event, 'move')
+
+    def dropEvent(self, event):
+        self.handle_drag_drop_event(event, 'drop')
