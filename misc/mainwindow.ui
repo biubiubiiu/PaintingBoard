@@ -108,8 +108,15 @@
     <addaction name="actionSharpen"/>
     <addaction name="actionPixelize"/>
    </widget>
+   <widget class="QMenu" name="menuAdvanced">
+    <property name="title">
+     <string>Advanced</string>
+    </property>
+    <addaction name="actionDerain"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuAdvanced"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -314,6 +321,11 @@
   <action name="actionPixelize">
    <property name="text">
     <string>Pixelize</string>
+   </property>
+  </action>
+  <action name="actionDerain">
+   <property name="text">
+    <string>Derain</string>
    </property>
   </action>
   <actiongroup name="GuiActions">
