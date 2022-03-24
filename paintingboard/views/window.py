@@ -5,9 +5,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QColorDialog, QFileDialog, QMainWindow
 
+from .utils import action2canvasmode
+
 from paintingboard.core import utils
 from paintingboard.models import Actions, Zooming
-from paintingboard.ui import CanvasMode, Ui_MainWindow_Custom
+from paintingboard.ui import Ui_MainWindow_Custom
 
 EVENT_NEW_PAINTING = 'event_new_painting'
 EVENT_LOAD_FILE = 'event_load_file'
@@ -16,7 +18,7 @@ EVENT_CLEAR_CANVAS = 'event_clear_canvas'
 
 EVENT_SWITCH_TO_ERASE = 'event_switch_to_erase'
 EVENT_SWITCH_TO_FILL = 'event_switch_to_fill'
-EVENT_SWITCH_TO_DEFALT = 'event_switch_to_default'
+EVENT_SWITCH_TO_DEFAULT = 'event_switch_to_default'
 EVENT_SWITCH_TO_PEN = 'event_switch_to_pen'
 EVENT_SWITCH_TO_SPRAY = 'event_switch_to_spray'
 EVENT_SWITCH_TO_LINE = 'event_switch_to_line'
@@ -71,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
         painting_mode_switch = {
             self.actionErase: EVENT_SWITCH_TO_ERASE,
             self.acitonFill: EVENT_SWITCH_TO_FILL,
-            self.actiondefault: EVENT_SWITCH_TO_DEFALT,
+            self.actiondefault: EVENT_SWITCH_TO_DEFAULT,
             self.actionPen: EVENT_SWITCH_TO_PEN,
             self.actionspray: EVENT_SWITCH_TO_SPRAY,
             self.actionLine: EVENT_SWITCH_TO_LINE,
@@ -175,18 +177,20 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
         self.canvas.painter_color = state.strokeColor
         self.canvas.stroke_width = state.strokeWidth
 
-    def switch_mode(self, state):
-        action2canvasmode = {
-            Actions.ACTION_DEFALT: CanvasMode.IDLE,
-            Actions.ACTION_ERASE: CanvasMode.ERASER,
-            Actions.ACTION_FILL: CanvasMode.FILL,
-            Actions.ACTION_PEN: CanvasMode.PEN,
-            Actions.ACTION_SPRAY: CanvasMode.SPRAY,
-            Actions.ACTION_LINE: CanvasMode.LINE,
-            Actions.ACTION_RECT: CanvasMode.RECT,
-            Actions.ACTION_ELLIPSE: CanvasMode.ELLIPSE
-        }
-        self.canvas.mode = action2canvasmode[state.action]
+    def switch_mode(self, action):
+        self.canvas.mode = action2canvasmode[action]
+        self.update_action_mode_hint(action)
+
+    def update_action_mode_hint(self, action):
+        # TODO: refactoring
+        self.actionErase.setChecked(action == Actions.ACTION_ERASE)
+        self.acitonFill.setChecked(action == Actions.ACTION_FILL)
+        self.actiondefault.setChecked(action == Actions.ACTION_DEFAULT)
+        self.actionPen.setChecked(action == Actions.ACTION_PEN)
+        self.actionspray.setChecked(action == Actions.ACTION_SPRAY)
+        self.actionLine.setChecked(action == Actions.ACTION_LINE)
+        self.actionRectangle.setChecked(action == Actions.ACTION_RECT)
+        self.actionEllipse.setChecked(action == Actions.ACTION_ELLIPSE)
 
     def show_painter_color(self, color):
         if color is int:

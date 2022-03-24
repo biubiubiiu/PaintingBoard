@@ -19,7 +19,7 @@ class View(object):
 
         # painting modes
         mode_switch = [
-            EVENT_SWITCH_TO_ERASE, EVENT_SWITCH_TO_FILL, EVENT_SWITCH_TO_DEFALT,
+            EVENT_SWITCH_TO_ERASE, EVENT_SWITCH_TO_FILL, EVENT_SWITCH_TO_DEFAULT,
             EVENT_SWITCH_TO_PEN, EVENT_SWITCH_TO_SPRAY, EVENT_SWITCH_TO_LINE,
             EVENT_SWITCH_TO_RECT, EVENT_SWITCH_TO_ELLIPSE
         ]
@@ -77,7 +77,10 @@ class View(object):
                 ops.map(lambda state: state.mode),
                 ops.distinct_until_changed()
             ).subscribe(self.window.change_zoom_mode)
-            self.viewModel.mode.subscribe(self.window.switch_mode)
+            self.viewModel.mode.pipe(
+                ops.map(lambda state: state.action),
+                ops.distinct_until_changed()
+            ).subscribe(self.window.switch_mode)
 
     def set_actions_availability(self, has_image):
         actions = [

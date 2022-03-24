@@ -42,7 +42,7 @@ class ViewModel(object):
 
     def switch_mode(self, action):
         str2Action = {
-            'default': Actions.ACTION_DEFALT,
+            'default': Actions.ACTION_DEFAULT,
             'pen': Actions.ACTION_PEN,
             'spray': Actions.ACTION_SPRAY,
             'erase': Actions.ACTION_ERASE,
