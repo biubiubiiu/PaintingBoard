@@ -2,7 +2,7 @@ from PyQt5.QtGui import QPixmap
 from rx.subject import BehaviorSubject
 
 from paintingboard.core import utils
-from paintingboard.models import ActionMode, Actions, PainterState
+from paintingboard.models import ActionMode, Actions, PainterState, ZoomingState
 
 
 class ViewModel(object):
@@ -15,6 +15,7 @@ class ViewModel(object):
 
         self.painter = BehaviorSubject(PainterState())
         self.mode = BehaviorSubject(ActionMode())
+        self.zooming = BehaviorSubject(ZoomingState())
 
     def new_painting(self, width=600, height=600):
         self.clear_canvas()
@@ -54,6 +55,11 @@ class ViewModel(object):
         current_state = self.mode.value
         next_state = current_state.copy(action=next_action)
         self.mode.on_next(next_state)
+
+    def switch_zooming_mode(self, mode):
+        current_state = self.zooming.value
+        next_state = current_state.copy(mode=mode)
+        self.zooming.on_next(next_state)
 
     def update_stroke_color(self, color):
         current_painter = self.painter.value

@@ -1,6 +1,7 @@
+from .action import ActionMode, Actions
 from .painter import PainterState
-from .action import Actions, ActionMode
+from .zooming import Zooming, ZoomingState
 
 __all__ = [
-    'PainterState', 'Actions', 'ActionMode'
+    'Actions', 'ActionMode', 'PainterState', 'Zooming'
 ]

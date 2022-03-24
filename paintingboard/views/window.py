@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QColorDialog, QFileDialog, QMainWindow
 
 from paintingboard.core import utils
-from paintingboard.models import Actions
+from paintingboard.models import Actions, Zooming
 from paintingboard.ui import CanvasMode, Ui_MainWindow_Custom
 
 EVENT_NEW_PAINTING = 'event_new_painting'
@@ -38,19 +38,15 @@ EVENT_SEPIA = 'event_sepia'
 EVENT_SHARPEN = 'event_sharpen'
 EVENT_PIXELIZE = 'event_pixelize'
 
-
-class Zooming(Enum):
-    FIT_WINDOW = 0
-    FIT_WIDTH = 1
-    MANUAL_ZOOM = 2
+EVENT_SWITCH_FIT_WINDOW = 'event_switch_fit_window'
+EVENT_SWITCH_FIT_WIDTH = 'event_switch_fit_width'
+EVENT_SWITCH_MANUAL_ZOOM = 'event_switch_manual_zoom'
 
 
 class MainWindow(QMainWindow, Ui_MainWindow_Custom):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.zoomMode = Zooming.FIT_WINDOW
 
         self.setAcceptDrops(True)  # TODO: set this property in mainwindow.ui
 
@@ -102,11 +98,11 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
             signal.triggered.connect(partial(self._transform_image, event))
 
         zooming_mode_switch = {
-            self.actionFitWindow: Zooming.FIT_WINDOW,
-            self.actionFitWidth: Zooming.FIT_WIDTH
+            self.actionFitWindow: EVENT_SWITCH_FIT_WINDOW,
+            self.actionFitWidth: EVENT_SWITCH_FIT_WIDTH,
         }
-        for signal, mode in zooming_mode_switch.items():
-            signal.triggered.connect(partial(self.change_zoom_mode, mode))
+        for signal, event in zooming_mode_switch.items():
+            signal.triggered.connect(partial(self._switch_zoom_mode, event))
 
         self.sizeselect.valueChanged.connect(self._update_stroke_width)
         self.colorPicker.clicked.connect(self._pick_color)
@@ -158,6 +154,9 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
     def _transform_image(self, name):
         self.notifyListener(name)
 
+    def _switch_zoom_mode(self, name):
+        self.notifyListener(name)
+
     def _update_stroke_width(self, value):
         self.notifyListener(EVENT_UPDATE_STROKE_WIDTH, width=value)
 
@@ -199,8 +198,8 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
     def show_status(self, message):
         self.statusbar.showMessage(message)
 
-    def computeScale(self, image):
-        if self.zoomMode == Zooming.FIT_WINDOW:
+    def computeScale(self, image, zoomMode):
+        if zoomMode == Zooming.FIT_WINDOW:
             e = 2.0
             w1 = self.centralWidget().width() - e
             h1 = self.centralWidget().height() - e
@@ -210,16 +209,16 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
             h2 = image.height()
             a2 = w2 / h2
             return w1 / w2 if a2 >= a1 else h1 / h2
-        elif self.zoomMode == Zooming.FIT_WIDTH:
+        elif zoomMode == Zooming.FIT_WIDTH:
             w = self.centralWidget().width() - 2.0
             return w / image.width()
-        elif self.zoomMode == Zooming.MANUAL_ZOOM:
+        elif zoomMode == Zooming.MANUAL_ZOOM:
             return 1.0
 
     def handle_zoom_request(self, delta, pos):
         canvas_width_old = self.canvas.width()
 
-        self.zoom(True if delta > 0 else False)
+        self._zoom(isZoomIn=True if delta > 0 else False)
 
         canvas_width_new = self.canvas.width()
         if canvas_width_old != canvas_width_new:
@@ -253,34 +252,30 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
 
         event.accept()
 
-    def zoom(self, isZoomIn=True):
+    def _zoom(self, isZoomIn):
+        self._switch_zoom_mode(EVENT_SWITCH_MANUAL_ZOOM)
         self.canvas.scale += 0.1 * (1 if isZoomIn else -1)
-        self.zoomMode = Zooming.MANUAL_ZOOM
         self.canvas.updateGeometry()
         self.canvas.adjustSize()
         self.canvas.repaint()
 
-    def adjustScale(self):
-        value = self.computeScale(self.canvas.pixmap)
+    def change_zoom_mode(self, mode):
+        self.updateZoomBtn(mode)
+        if self.canvas.pixmap:
+            self.adjustScale(mode)
+            self.canvas.repaint()
+
+    def updateZoomBtn(self, mode):
+        self.actionFitWidth.setChecked(mode == Zooming.FIT_WIDTH)
+        self.actionFitWindow.setChecked(mode == Zooming.FIT_WINDOW)
+
+    def adjustScale(self, mode):
+        value = self.computeScale(self.canvas.pixmap, mode)
         self.canvas.scale = value
 
     def paintCanvas(self):
         self.canvas.scale = 0.01 * self.spinbox_scale.value()
         self.canvas.repaint()
-
-    def change_zoom_mode(self, mode):
-        if not isinstance(mode, Zooming) or mode == self.zoomMode:
-            return
-        self.zoomMode = mode
-        self.updateZoomBtn()
-        self.adjustScale()
-        self.canvas.repaint()
-
-    def updateZoomBtn(self):
-        actions = (self.actionFitWidth, self.actionFitWindow)
-        modes = (Zooming.FIT_WIDTH, Zooming.FIT_WINDOW)
-        for action, mode in zip(actions, modes):
-            action.setChecked(True if mode == self.zoomMode else False)
 
     def dragEnterEvent(self, event):
         self.handle_drag_drop_event(event, 'enter')

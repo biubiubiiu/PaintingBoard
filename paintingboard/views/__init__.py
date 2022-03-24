@@ -34,6 +34,15 @@ class View(object):
         for event, callfunc in attr_update.items():
             self.window.registerListener(event, callfunc)
 
+        # zooming modes
+        zoom_mode_switch = {
+            EVENT_SWITCH_FIT_WIDTH: Zooming.FIT_WIDTH, 
+            EVENT_SWITCH_FIT_WINDOW: Zooming.FIT_WINDOW, 
+            EVENT_SWITCH_MANUAL_ZOOM: Zooming.MANUAL_ZOOM
+        }
+        for event, mode in zoom_mode_switch.items():
+            self.window.registerListener(event, partial(self.switch_zoom_mode, mode))
+
         # transformations
         transforms = {
             EVENT_INVERT_COLOR: image_ops.invert_color,
@@ -64,6 +73,10 @@ class View(object):
                 ops.map(lambda state: state.strokeColor),
                 ops.distinct_until_changed()
             ).subscribe(self.window.show_painter_color)
+            self.viewModel.zooming.pipe(
+                ops.map(lambda state: state.mode),
+                ops.distinct_until_changed()
+            ).subscribe(self.window.change_zoom_mode)
             self.viewModel.mode.subscribe(self.window.switch_mode)
 
     def set_actions_availability(self, has_image):
@@ -101,6 +114,10 @@ class View(object):
         assert self.viewModel is not None
         mode = event_name.replace('event_switch_to_', '')
         self.viewModel.switch_mode(mode)
+
+    def switch_zoom_mode(self, mode):
+        assert self.viewModel is not None
+        self.viewModel.switch_zooming_mode(mode)
 
     def change_color(self, color):
         assert self.viewModel is not None
