@@ -1,8 +1,11 @@
+import io
 import math
 import os
 
 import cv2
 import numpy as np
+from PIL import Image
+from PyQt5.QtCore import QBuffer, QByteArray, QIODevice
 from PyQt5.QtGui import QImage, QImageReader, QPixmap
 
 
@@ -38,3 +41,21 @@ def numpy2QPixmap(array):
     image = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
     image = QImage(image.data, width, height, width*depth, QImage.Format_RGB888)
     return QPixmap.fromImage(image)
+
+
+def qpixmap2Bytes(pixmap):
+    ba = QByteArray()
+    buff = QBuffer(ba)
+    buff.open(QIODevice.WriteOnly) 
+    ok = pixmap.save(buff, "PNG")
+    assert ok
+    pixmap_bytes = ba.data()
+    return pixmap_bytes
+
+
+def bytes2QPixmap(bytes):
+    image = Image.open(io.BytesIO(bytes))
+    arr = np.array(image)
+    arr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+    pixmap = numpy2QPixmap(arr)
+    return pixmap

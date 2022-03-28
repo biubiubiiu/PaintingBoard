@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import requests
 from PyQt5.QtGui import QImage, QPixmap, QTransform
 
 from . import utils
@@ -108,4 +109,16 @@ def pixelize(pixmap, pixelated_factor=4):
     # Initialize output image
     ret = cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
     ret = utils.numpy2QPixmap(ret)
+    return ret
+
+
+def derain(pixmap):
+    # TODO: move to view model, call from coroutine
+
+    url = 'http://localhost:5000/derain'
+    resp = requests.post(url, files={"file": utils.qpixmap2Bytes(pixmap)})
+    if resp.status_code == 200:
+        ret = utils.bytes2QPixmap(resp.content)
+    else:
+        ret = None
     return ret
