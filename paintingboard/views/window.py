@@ -220,7 +220,7 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
             w = self.centralWidget().width() - 2.0
             return w / image.width()
         elif zoomMode == Zooming.MANUAL_ZOOM:
-            return 1.0
+            return self.canvas.scale
 
     def handle_zoom_request(self, delta, pos):
         canvas_width_old = self.canvas.width()
