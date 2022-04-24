@@ -122,3 +122,15 @@ def derain(pixmap):
     else:
         ret = None
     return ret
+
+
+def remove_shadow(pixmap):
+    # TODO: move to view model, call from coroutine
+
+    url = 'http://localhost:5000/shadow'
+    resp = requests.post(url, files={"file": utils.qpixmap2Bytes(pixmap)})
+    if resp.status_code == 200:
+        ret = utils.bytes2QPixmap(resp.content)
+    else:
+        ret = None
+    return ret

@@ -41,6 +41,7 @@ EVENT_SHARPEN = 'event_sharpen'
 EVENT_PIXELIZE = 'event_pixelize'
 
 EVENT_DERAIN = 'event_derain'
+EVENT_SHADOW_REMOVAL = 'event_shadow_removal'
 
 EVENT_SWITCH_FIT_WINDOW = 'event_switch_fit_window'
 EVENT_SWITCH_FIT_WIDTH = 'event_switch_fit_width'
@@ -97,7 +98,8 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
             self.actionSepia: EVENT_SEPIA,
             self.actionSharpen: EVENT_SHARPEN,
             self.actionPixelize: EVENT_PIXELIZE,
-            self.actionDerain: EVENT_DERAIN
+            self.actionDerain: EVENT_DERAIN,
+            self.actionShadowRemoval: EVENT_SHADOW_REMOVAL
         }
         for signal, event in image_editing.items():
             signal.triggered.connect(partial(self._transform_image, event))

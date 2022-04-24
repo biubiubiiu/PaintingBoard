@@ -56,7 +56,8 @@ class View(object):
             EVENT_SEPIA: image_ops.sepia,
             EVENT_SHARPEN: image_ops.usm_sharpen,
             EVENT_PIXELIZE: image_ops.pixelize,
-            EVENT_DERAIN: image_ops.derain
+            EVENT_DERAIN: image_ops.derain,
+            EVENT_SHADOW_REMOVAL: image_ops.remove_shadow 
         }
         for event, op in transforms.items():
             self.window.registerListener(event, partial(self.transform, op))
@@ -93,7 +94,7 @@ class View(object):
             self.window.actionMedian_Blur, self.window.actionGaussian_Blur,
             self.window.actionSepia, self.window.actionSharpen, self.window.actionPixelize,
             self.window.actionInvert_Color, self.window.actionSave, self.window.actionSave_as,
-            self.window.actionDerain
+            self.window.actionDerain, self.window.actionShadowRemoval
         ]
         for it in actions:
             it.setEnabled(has_image)

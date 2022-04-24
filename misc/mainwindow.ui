@@ -328,6 +328,11 @@
     <string>Derain</string>
    </property>
   </action>
+  <action name="actionShadowRemoval">
+   <property name="text">
+    <string>Shadow Removal</string>
+   </property>
+  </action>
   <actiongroup name="GuiActions">
    <action name="actionLine">
     <property name="checkable">
