@@ -16,6 +16,11 @@ EVENT_LOAD_FILE = 'event_load_file'
 EVENT_SAVE_FILE = 'event_save_file'
 EVENT_CLEAR_CANVAS = 'event_clear_canvas'
 
+EVENT_UNDO = 'event_undo'
+EVENT_REDO = 'event_redo'
+
+EVENT_COMMIT = 'event_commit'
+
 EVENT_SWITCH_TO_ERASE = 'event_switch_to_erase'
 EVENT_SWITCH_TO_FILL = 'event_switch_to_fill'
 EVENT_SWITCH_TO_DEFAULT = 'event_switch_to_default'
@@ -72,6 +77,7 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
 
         self.canvas.scrollRequest.connect(self.handle_scroll_request)
         self.canvas.zoomRequest.connect(self.handle_zoom_request)
+        self.canvas.commitRequest.connect(self._commit)
 
         painting_mode_switch = {
             self.actionErase: EVENT_SWITCH_TO_ERASE,
@@ -103,6 +109,13 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
         }
         for signal, event in image_editing.items():
             signal.triggered.connect(partial(self._transform_image, event))
+
+        workflow_control = {
+            self.actionUndo: EVENT_UNDO,
+            self.actionRedo: EVENT_REDO
+        }
+        for signal, event in workflow_control.items():
+            signal.triggered.connect(partial(self._workflow_control, event))
 
         zooming_mode_switch = {
             self.actionFitWindow: EVENT_SWITCH_FIT_WINDOW,
@@ -158,6 +171,9 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
     def _switch_painting_mode(self, name):
         self.notifyListener(name, event_name=name)
 
+    def _workflow_control(self, name):
+        self.notifyListener(name)
+
     def _transform_image(self, name):
         self.notifyListener(name)
 
@@ -166,6 +182,9 @@ class MainWindow(QMainWindow, Ui_MainWindow_Custom):
 
     def _update_stroke_width(self, value):
         self.notifyListener(EVENT_UPDATE_STROKE_WIDTH, width=value)
+
+    def _commit(self):
+        self.notifyListener(EVENT_COMMIT)
 
     def _pick_color(self):
         dlg = QColorDialog()

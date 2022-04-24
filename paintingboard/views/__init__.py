@@ -1,6 +1,5 @@
 from .window import *
 
-from paintingboard.core import image_ops
 from rx import operators as ops
 
 
@@ -44,32 +43,43 @@ class View(object):
             self.window.registerListener(event, partial(self.switch_zoom_mode, mode))
 
         # transformations
-        transforms = {
-            EVENT_INVERT_COLOR: image_ops.invert_color,
-            EVENT_HORIZONTAL_FLIP: image_ops.horizontal_flip,
-            EVENT_VERTICAL_FLIP: image_ops.vertical_flip,
-            EVENT_EQUALIZE_HIST: image_ops.equalize_hist,
-            EVENT_TO_GRAYSCALE: image_ops.to_grayscale,
-            EVENT_BLUR: image_ops.average_blur,
-            EVENT_MEDIAN_BLUR: image_ops.median_blur,
-            EVENT_GAUSSIAN_BLUR: image_ops.gaussian_blur,
-            EVENT_SEPIA: image_ops.sepia,
-            EVENT_SHARPEN: image_ops.usm_sharpen,
-            EVENT_PIXELIZE: image_ops.pixelize,
-            EVENT_DERAIN: image_ops.derain,
-            EVENT_SHADOW_REMOVAL: image_ops.remove_shadow 
+        for event in [
+            EVENT_INVERT_COLOR,
+            EVENT_HORIZONTAL_FLIP,
+            EVENT_VERTICAL_FLIP,
+            EVENT_EQUALIZE_HIST,
+            EVENT_TO_GRAYSCALE,
+            EVENT_BLUR,
+            EVENT_MEDIAN_BLUR,
+            EVENT_GAUSSIAN_BLUR,
+            EVENT_SEPIA,
+            EVENT_SHARPEN,
+            EVENT_PIXELIZE,
+            EVENT_DERAIN,
+            EVENT_SHADOW_REMOVAL
+        ]:
+            self.window.registerListener(event, partial(self.transform, event))
+
+        workflow_control = {
+            EVENT_UNDO: self.undo,
+            EVENT_REDO: self.redo,
+            EVENT_COMMIT: self.commit
         }
-        for event, op in transforms.items():
-            self.window.registerListener(event, partial(self.transform, op))
+        for event, func in workflow_control.items():
+            self.window.registerListener(event, func)
+
 
     def bind(self, viewModel):
         self.viewModel = viewModel
         if viewModel is not None:
-            self.viewModel.canvasNotEmpty.subscribe(self.set_actions_availability)
+            self.viewModel.current_img.pipe(
+                ops.map(lambda img: img is not None)
+            ).subscribe(self.set_actions_availability)
             self.viewModel.currentFilename.subscribe(
                 on_next=self.window.show_status,
                 on_error=lambda e: self.window.show_status(e.message)
             )
+            self.viewModel.current_img.subscribe(self.window.display)
             self.viewModel.painter.subscribe(self.window.setup_painter)
             self.viewModel.painter.pipe(
                 ops.map(lambda state: state.strokeColor),
@@ -102,19 +112,16 @@ class View(object):
     def new_painting(self):
         assert self.viewModel is not None
         self.clear_canvas()
-        image = self.viewModel.new_painting()
-        self.window.display(image)
+        self.viewModel.new_painting()
 
     def open_file(self, fname):
         assert self.viewModel is not None
         self.clear_canvas()
-        image = self.viewModel.load_file(fname)
-        self.window.display(image)
+        self.viewModel.load_file(fname)
 
     def clear_canvas(self):
         assert self.viewModel is not None
         self.viewModel.clear_canvas()
-        self.window.display(None)
 
     def switch_mode(self, event_name):
         assert self.viewModel is not None
@@ -133,10 +140,23 @@ class View(object):
         assert self.viewModel is not None
         self.viewModel.update_stroke_width(width)
 
-    def transform(self, trans):
+    def transform(self, event_name):
+        assert self.viewModel is not None
+        trans = event_name.replace('event_', '')
+        self.viewModel.transform(trans)
+
+    def commit(self):
+        assert self.viewModel is not None
         pixmap = self.window.canvas.pixmap
-        pixmap_trans = trans(pixmap)
-        self.window.display(pixmap_trans)
+        self.viewModel.commit(pixmap)
+
+    def undo(self):
+        assert self.viewModel is not None
+        self.viewModel.undo()
+
+    def redo(self):
+        assert self.viewModel is not None
+        self.viewModel.redo()
 
     def show(self):
         self.window.show()

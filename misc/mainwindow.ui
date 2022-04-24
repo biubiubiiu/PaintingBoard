@@ -96,6 +96,9 @@
     <addaction name="actionHorizontal_Flip"/>
     <addaction name="actionVertical_Flip"/>
     <addaction name="separator"/>
+    <addaction name="undo"/>
+    <addaction name="redo"/>
+    <addaction name="separator"/>
     <addaction name="actionInvert_Color"/>
     <addaction name="actionGrayscale"/>
     <addaction name="actionEqualize_Hist"/>
@@ -227,6 +230,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
   </action>
   <action name="actionHorizontal_Flip">

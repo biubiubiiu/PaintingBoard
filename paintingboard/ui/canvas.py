@@ -31,6 +31,7 @@ class Canvas(QWidget):
 
     zoomRequest = pyqtSignal(int, QPoint)
     scrollRequest = pyqtSignal(int, int)
+    commitRequest = pyqtSignal(int)
 
     SPRAY_PAINT_N = 50
     SPRAY_PAINT_MULT = 5
@@ -141,6 +142,8 @@ class Canvas(QWidget):
         if func:
             func(ev)
 
+        self.commitRequest.emit(1)
+
     # Generic events (shared by brush-like tools)
 
     def generic_mousePressEvent(self, ev):
@@ -159,7 +162,7 @@ class Canvas(QWidget):
     def eraser_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=True)
+            painter = self.build_painter(eraser=True)  # TODO paint on a new pixmap
             painter.drawLine(self.prev_pos, pos)
 
             self.prev_pos = pos
@@ -176,7 +179,7 @@ class Canvas(QWidget):
     def pen_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=False)
+            painter = self.build_painter(eraser=False)  # TODO paint on a new pixmap
             painter.drawLine(self.prev_pos, pos)
 
             self.prev_pos = pos
@@ -193,7 +196,7 @@ class Canvas(QWidget):
     def spray_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=False)
+            painter = self.build_painter(eraser=False)  # TODO paint on a new pixmap
 
             for _ in range(self.SPRAY_PAINT_N):
                 xo = random.gauss(0, self.stroke_width)
