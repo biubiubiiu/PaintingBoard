@@ -19,6 +19,9 @@ class ViewModel(object):
 
         self.current_img = BehaviorSubject(None)
 
+        self.possible_undo_count = BehaviorSubject(0)
+        self.possible_redo_count = BehaviorSubject(0)
+
         self.painter = BehaviorSubject(PainterState())
         self.mode = BehaviorSubject(ActionMode())
         self.zooming = BehaviorSubject(ZoomingState())
@@ -134,3 +137,5 @@ class ViewModel(object):
     def _notify(self):
         img = self.img_queue[self.img_queue_idx] if self.img_queue_idx >= 0 else None
         self.current_img.on_next(img)
+        self.possible_undo_count.on_next(max(0, self.img_queue_idx))
+        self.possible_redo_count.on_next(len(self.img_queue) - self.img_queue_idx - 1)

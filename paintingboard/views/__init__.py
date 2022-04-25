@@ -75,6 +75,12 @@ class View(object):
             self.viewModel.current_img.pipe(
                 ops.map(lambda img: img is not None)
             ).subscribe(self.set_actions_availability)
+            self.viewModel.possible_undo_count.pipe(
+                ops.map(lambda cnt: cnt > 0)
+            ).subscribe(self.window.actionUndo.setEnabled)
+            self.viewModel.possible_redo_count.pipe(
+                ops.map(lambda cnt: cnt > 0)
+            ).subscribe(self.window.actionRedo.setEnabled)
             self.viewModel.currentFilename.subscribe(
                 on_next=self.window.show_status,
                 on_error=lambda e: self.window.show_status(e.message)
