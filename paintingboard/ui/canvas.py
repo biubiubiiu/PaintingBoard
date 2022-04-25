@@ -148,6 +148,7 @@ class Canvas(QWidget):
 
     def generic_mousePressEvent(self, ev):
         self.prev_pos = self.transformPos(ev.localPos())
+        self.pixmap = self.pixmap.copy()
 
     def generic_mouseReleaseEvent(self, _):
         self.prev_pos = None
@@ -162,7 +163,7 @@ class Canvas(QWidget):
     def eraser_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=True)  # TODO paint on a new pixmap
+            painter = self.build_painter(eraser=True)
             painter.drawLine(self.prev_pos, pos)
 
             self.prev_pos = pos
@@ -179,7 +180,7 @@ class Canvas(QWidget):
     def pen_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=False)  # TODO paint on a new pixmap
+            painter = self.build_painter(eraser=False)
             painter.drawLine(self.prev_pos, pos)
 
             self.prev_pos = pos
@@ -196,7 +197,7 @@ class Canvas(QWidget):
     def spray_mouseMoveEvent(self, ev):
         if self.prev_pos:
             pos = self.transformPos(ev.localPos())
-            painter = self.build_painter(eraser=False)  # TODO paint on a new pixmap
+            painter = self.build_painter(eraser=False)
 
             for _ in range(self.SPRAY_PAINT_N):
                 xo = random.gauss(0, self.stroke_width)
