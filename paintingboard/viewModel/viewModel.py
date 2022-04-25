@@ -25,23 +25,21 @@ class ViewModel(object):
 
     def new_painting(self, width=600, height=600):
         self.clear_canvas()
-        pixmap = QPixmap(width, height)
-        self._enqueue_img(pixmap)
-        return pixmap
+        self._enqueue_img(QPixmap(width, height))
 
     def load_file(self, fname):
         if fname is None:
-            return None
+            self.currentFilename.on_error(ValueError('Filename is None'))
+            return
 
         image = utils.readImage(fname)
         if image.isNull():
             self.currentFilename.on_error(ValueError(f'Fail to open {fname}'))
-            return None
-        else:
-            pixmap = QPixmap.fromImage(image)
-            self._enqueue_img(pixmap)
-            self.currentFilename.on_next(fname)
-            return pixmap
+            return
+
+        pixmap = QPixmap.fromImage(image)
+        self._enqueue_img(pixmap)
+        self.currentFilename.on_next(fname)
 
     def clear_canvas(self):
         self._clear_img_queue()
@@ -118,6 +116,9 @@ class ViewModel(object):
         self._notify()
 
     def _enqueue_img(self, img):
+        while len(self.img_queue) > 1 + self.img_queue_idx:
+            self.img_queue.pop()
+
         self.img_queue.append(img)
         self.img_queue_idx += 1
         if len(self.img_queue) > self.max_queue_size:
